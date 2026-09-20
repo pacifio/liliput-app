@@ -5,8 +5,15 @@ import { useRouter } from "next/navigation"
 import { Loader2, ShoppingCart } from "lucide-react"
 import { toast } from "sonner"
 
-import { Price, SectionTitle, ShopButton, ShopCard } from "@/components/shop/ui"
+import {
+  Price,
+  SectionTitle,
+  ShopButton,
+  ShopCard,
+  ShopField,
+} from "@/components/shop/ui"
 import { useMounted } from "@/hooks/use-mounted"
+import { useAccount } from "@/lib/account"
 import { useDataset } from "@/lib/data"
 import { GATEWAY_HUE, GATEWAY_LABEL } from "@/lib/labels"
 import { useLocale } from "@/lib/i18n/provider"
@@ -27,6 +34,7 @@ export default function CheckoutPage() {
   const profile = useLive((s) => s.profile)
   const setProfile = useLive((s) => s.setProfile)
   const placeOrder = useLive((s) => s.placeOrder)
+  const session = useAccount((s) => s.session)
 
   const [gateway, setGateway] = React.useState<Gateway>("bkash")
   const [busy, setBusy] = React.useState(false)
@@ -45,7 +53,13 @@ export default function CheckoutPage() {
     setBusy(true)
     // A short delay so the gateway hand-off reads as a real redirect.
     window.setTimeout(() => {
-      const order = buildOrder({ cart: lines, data, profile, gateway })
+      const order = buildOrder({
+        cart: lines,
+        data,
+        profile,
+        gateway,
+        customerId: session?.customerId,
+      })
       placeOrder(order)
       toast.success(t("shop.orderPlaced", { ref: order.ref }), {
         description: t("shop.orderPlacedHint"),
@@ -63,20 +77,20 @@ export default function CheckoutPage() {
           <ShopCard className="p-5">
             <p className="micro mb-3">{t("shop.yourDetails")}</p>
             <div className="flex flex-col gap-3">
-              <Field
+              <ShopField
                 label={t("shop.fullName")}
                 value={profile.name}
                 onChange={(name) => setProfile({ name })}
                 placeholder="নুসরাত জাহান"
               />
-              <Field
+              <ShopField
                 label={t("shop.phone")}
                 value={profile.phone}
                 onChange={(phone) => setProfile({ phone })}
                 placeholder="01712345678"
                 inputMode="tel"
               />
-              <Field
+              <ShopField
                 label={`${t("shop.email")} · ${t("common.optional")}`}
                 value={profile.email}
                 onChange={(email) => setProfile({ email })}
@@ -168,32 +182,5 @@ export default function CheckoutPage() {
         </ShopCard>
       </div>
     </div>
-  )
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  inputMode,
-}: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
-  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"]
-}) {
-  return (
-    <label className="flex flex-col gap-1.5">
-      <span className="micro">{label}</span>
-      <input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
-        inputMode={inputMode}
-        className="h-10 rounded-xl border border-border bg-surface px-3 text-[0.8125rem] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-      />
-    </label>
   )
 }

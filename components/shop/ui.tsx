@@ -112,6 +112,33 @@ export function Price({
   )
 }
 
+export function ShopField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  inputMode,
+}: {
+  label: string
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"]
+}) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="micro">{label}</span>
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        inputMode={inputMode}
+        className="h-10 rounded-xl border border-border bg-surface px-3 text-[0.8125rem] outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
+      />
+    </label>
+  )
+}
+
 /** A soft tinted wash used behind hero art and category tiles. */
 export function HueWash({
   hue,

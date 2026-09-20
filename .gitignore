@@ -38,3 +38,5 @@ next-env.d.ts
 # atlas reference clones
 /.atlas
 .vercel
+
+docs

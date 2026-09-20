@@ -19,6 +19,7 @@ import {
   Smartphone,
   Sun,
   Ticket,
+  User,
   type LucideIcon,
 } from "lucide-react"
 import { useTheme } from "next-themes"
@@ -33,6 +34,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useMounted } from "@/hooks/use-mounted"
+import { useAccount } from "@/lib/account"
 import { BRANCHES } from "@/lib/branches"
 import { useBranch } from "@/lib/data"
 import { HUE_VAR } from "@/lib/hue"
@@ -185,9 +187,11 @@ function ShopHeader() {
   const branch = useBranch()
   const setBranchId = useUi((s) => s.setBranchId)
   const cart = useLive((s) => s.cart)
+  const session = useAccount((s) => s.session)
   const { resolvedTheme, setTheme } = useTheme()
   const mounted = useMounted()
   const count = mounted ? cart.reduce((sum, l) => sum + l.qty, 0) : 0
+  const signedIn = mounted && !!session
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 border-b border-[var(--hairline)] px-4 @lg:h-16 @lg:px-6">
@@ -283,6 +287,16 @@ function ShopHeader() {
             <Moon className="size-3.5" />
           )}
         </button>
+
+        <Link
+          href="/shop/account"
+          className={cn(
+            "flex size-8 items-center justify-center rounded-full transition-colors hover:bg-muted/60",
+            signedIn ? "text-primary" : "text-muted-foreground"
+          )}
+        >
+          <User className="size-4" />
+        </Link>
 
         <Link
           href="/shop/cart"

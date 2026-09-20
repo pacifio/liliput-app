@@ -95,6 +95,17 @@ export function linePayable(line: CartLine) {
 /** VAT is charged on retail goods only, not on play time or memberships. */
 export const PRODUCT_VAT = 0.06
 
+/**
+ * One shop customer per phone number, keyed on its last 6 digits — the same
+ * idiom the day-care desk uses to resolve a guardian by phone. Kept as its
+ * own export so a signed-in account can resolve to the same id a checkout
+ * would otherwise mint.
+ */
+export function deriveShopCustomerId(phone: string) {
+  const digitsOnly = phone.replace(/\D/g, "")
+  return `cus_shop_${digitsOnly.slice(-6) || "000000"}`
+}
+
 export function cartTotals(cart: CartLine[]) {
   const gross = cart.reduce((sum, l) => sum + l.unitPrice * l.qty, 0)
   const due = cart.reduce((sum, l) => sum + linePayable(l), 0)
@@ -110,11 +121,18 @@ export function buildOrder({
   data,
   profile,
   gateway,
+  customerId: customerIdOverride,
 }: {
   cart: CartLine[]
   data: Dataset
   profile: ShopProfile
   gateway: Gateway
+  /**
+   * When a customer is signed in, their session id carries over so a new
+   * order joins their existing history instead of minting a fresh one keyed
+   * off the phone number (which would only match for brand-new accounts).
+   */
+  customerId?: string
 }): LiveOrder {
   const at = demoNow()
   const seq = rand(90000) + 10000
@@ -125,8 +143,7 @@ export function buildOrder({
 
   // One customer record per device, keyed on the phone number, so a second
   // order from the same visitor does not create a second profile.
-  const digitsOnly = profile.phone.replace(/\D/g, "")
-  const customerId = `cus_shop_${digitsOnly.slice(-6) || "000000"}`
+  const customerId = customerIdOverride ?? deriveShopCustomerId(profile.phone)
   const name: Bilingual = { en: profile.name, bn: profile.name }
 
   const bookings: Booking[] = []
