@@ -10,8 +10,11 @@ function ThemeProvider({
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="system"
-      enableSystem
+      // Light is the product default and the one the demo opens in. The OS
+      // preference is deliberately not consulted: a dark laptop should not
+      // change what a client sees in a tender room.
+      defaultTheme="light"
+      enableSystem={false}
       disableTransitionOnChange
       {...props}
     >
